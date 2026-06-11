@@ -96,22 +96,20 @@
     </div>
 
     <div class="desc">
-        Welcome back. Please login to continue.
+        Create your account to start sharing moments.
     </div>
 
-    <form action="/go" method="post">
+    <!-- ✔ فقط signup، بدون go -->
+    <form action="/signup" method="post">
 
-        <input type="text" name="username" placeholder="Username">
+        <input type="text" name="username" placeholder="Username" required>
 
-        <input type="password" name="password" placeholder="Password">
-
-        <button type="submit">Log In</button>
+        <button type="submit">Sign Up</button>
 
     </form>
 
     <div class="links">
-        <a href="#">Forgot password?</a>
-        <a href="/signup">Sign up</a>
+        <a href="/">Back</a>
     </div>
 
     <div class="small">
