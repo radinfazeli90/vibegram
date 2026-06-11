@@ -3,11 +3,10 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-
 app.secret_key = "vibegram-secret"
 
-# 📁 uploads folder
-UPLOAD_FOLDER = "uploads"
+# 📁 uploads folder (Render safe)
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -30,7 +29,6 @@ def home():
 # ---------------- SIGN UP ----------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-
     if request.method == "POST":
         username = request.form["username"]
         session["username"] = username
@@ -50,15 +48,13 @@ def go():
 def feed(username):
     return render_template("feed.html", username=username, posts=posts)
 
-# ---------------- POST (GET + POST FIXED) ----------------
+# ---------------- POST ----------------
 @app.route("/post/<username>", methods=["GET", "POST"])
 def post(username):
 
-    # باز کردن صفحه پست
     if request.method == "GET":
         return render_template("post.html", username=username)
 
-    # ساخت پست
     text = request.form["text"]
     file = request.files.get("photo")
 
@@ -81,12 +77,12 @@ def post(username):
 
     return redirect(url_for("feed", username=username))
 
-# ---------------- SERVE UPLOADS ----------------
+# ---------------- UPLOADS ----------------
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory("uploads", filename)
 
-# ---------------- LIKE TOGGLE ----------------
+# ---------------- LIKE ----------------
 @app.route("/like/<username>/<int:index>")
 def like(username, index):
 
@@ -112,16 +108,10 @@ def like(username, index):
 # ---------------- PROFILE ----------------
 @app.route("/profile/<username>")
 def profile(username):
-
     user_posts = [p for p in posts if p.get("user") == username]
+    return render_template("profile.html", username=username, posts=user_posts)
 
-    return render_template(
-        "profile.html",
-        username=username,
-        posts=user_posts
-    )
-
-# ---------------- RUN ----------------
+# ---------------- RUN (Render FIX) ----------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
