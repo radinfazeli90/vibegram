@@ -30,18 +30,15 @@ def home():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form.get("username")
+
+        if not username:
+            return redirect(url_for("home"))
+
         session["username"] = username
         return redirect(url_for("feed", username=username))
 
     return render_template("signup.html")
-
-# ---------------- LOGIN ----------------
-@app.route("/go", methods=["POST"])
-def go():
-    username = request.form["username"]
-    session["username"] = username
-    return redirect(url_for("feed", username=username))
 
 # ---------------- FEED ----------------
 @app.route("/feed/<username>")
