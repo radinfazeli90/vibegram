@@ -5,10 +5,8 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = "vibegram-secret"
 
-# 📁 uploads folder (Render safe)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 posts = [
@@ -21,31 +19,24 @@ posts = [
     }
 ]
 
-# ---------------- HOME ----------------
 @app.route("/")
 def home():
     return render_template("register.html")
 
-# ---------------- SIGN UP ----------------
-@app.route("/signup", methods=["GET", "POST"])
+@app.route("/signup", methods=["POST"])
 def signup():
-    if request.method == "POST":
-        username = request.form.get("username")
+    username = request.form.get("username")
 
-        if not username:
-            return redirect(url_for("home"))
+    if not username:
+        return redirect("/")
 
-        session["username"] = username
-        return redirect(url_for("feed", username=username))
+    session["username"] = username
+    return redirect(f"/feed/{username}")
 
-    return render_template("signup.html")
-
-# ---------------- FEED ----------------
 @app.route("/feed/<username>")
 def feed(username):
     return render_template("feed.html", username=username, posts=posts)
 
-# ---------------- POST ----------------
 @app.route("/post/<username>", methods=["GET", "POST"])
 def post(username):
 
@@ -61,7 +52,6 @@ def post(username):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
-
         image_url = "/uploads/" + filename
 
     posts.append({
@@ -74,22 +64,20 @@ def post(username):
 
     return redirect(url_for("feed", username=username))
 
-# ---------------- UPLOADS ----------------
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory("uploads", filename)
 
-# ---------------- LIKE ----------------
 @app.route("/like/<username>/<int:index>")
 def like(username, index):
 
     user = session.get("username")
 
     if not user:
-        return redirect(url_for("home"))
+        return redirect("/")
 
     if index < 0 or index >= len(posts):
-        return redirect(url_for("feed", username=username))
+        return redirect(f"/feed/{username}")
 
     post = posts[index]
 
@@ -100,15 +88,13 @@ def like(username, index):
         post["liked_by"].append(user)
         post["likes"] += 1
 
-    return redirect(url_for("feed", username=username))
+    return redirect(f"/feed/{username}")
 
-# ---------------- PROFILE ----------------
 @app.route("/profile/<username>")
 def profile(username):
     user_posts = [p for p in posts if p.get("user") == username]
     return render_template("profile.html", username=username, posts=user_posts)
 
-# ---------------- RUN (Render FIX) ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
